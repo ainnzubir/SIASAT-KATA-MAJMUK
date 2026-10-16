@@ -1,0 +1,1050 @@
+<!DOCTYPE html>
+<html lang="ms" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SIASAT KATA MAJMUK — FAIL KES DETEKTIF</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts for classic typewriter & detective theme -->
+    <link href="https://fonts.googleapis.com/css2?family=Special+Elite&family=Courier+Prime:ital,wght@0,400;0,700;1,400&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- FontAwesome for investigative icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        paperOld: '#D6BC91',
+                        paperCream: '#F2E4C9',
+                        paperDark: '#4B3326',
+                        inkBlack: '#211C18',
+                        stampRed: '#8B2635',
+                        goldDull: '#C39A4A',
+                        greenSolve: '#54734A',
+                        catFree: '#9B2C2C',      /* Merah bata */
+                        catTerm: '#2B6CB0',      /* Biru kelabu */
+                        catIdiom: '#276749',     /* Hijau zaitun */
+                        catSolid: '#B7791F'      /* Emas kusam */
+                    },
+                    fontFamily: {
+                        typewriter: ['"Special Elite"', '"Courier Prime"', 'monospace'],
+                        sans: ['Poppins', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            background-color: #211C18;
+            background-image: radial-gradient(#3a3027 1px, transparent 1px), radial-gradient(#3a3027 1px, #211C18 1px);
+            background-size: 40px 40px;
+            background-position: 0 0, 20px 20px;
+            font-family: 'Poppins', sans-serif;
+        }
+        
+        .paper-texture {
+            background-color: #F2E4C9;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.08'/%3E%3C/svg%3E");
+        }
+
+        .old-document {
+            background-color: #D6BC91;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5), 0 8px 10px -6px rgba(0, 0, 0, 0.5);
+            border: 2px dashed #4B3326;
+        }
+
+        .stamp-badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            text-transform: uppercase;
+            font-family: 'Special Elite', cursive;
+            font-weight: 700;
+            border: 3px solid #8B2635;
+            color: #8B2635;
+            mask-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='100' height='100'><rect width='100' height='100'/></svg>");
+            transform: rotate(-4deg);
+            letter-spacing: 2px;
+        }
+
+        .stamp-success {
+            border-color: #54734A;
+            color: #54734A;
+            transform: rotate(3deg);
+        }
+
+        .evidence-card {
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            cursor: grab;
+        }
+        .evidence-card:active {
+            cursor: grabbing;
+        }
+
+        /* Custom scrollbar for dossiers */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #D6BC91;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #4B3326;
+            border-radius: 4px;
+        }
+
+        @keyframes pulse-subtle {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.03); }
+        }
+        .animate-pulse-subtle {
+            animation: pulse-subtle 2s infinite;
+        }
+    </style>
+</head>
+<body class="h-full text-inkBlack flex flex-col overflow-x-hidden selection:bg-goldDull selection:text-white">
+
+    <!-- Custom Notification / Message Box (Replaces alert) -->
+    <div id="modal-container" class="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm hidden">
+        <div id="modal-content" class="old-document p-6 sm:p-8 max-w-md w-full mx-4 rounded-lg text-center transform transition-all scale-95 opacity-0 duration-300">
+            <div id="modal-icon" class="text-4xl mb-3 text-stampRed"><i class="fa-solid fa-triangle-exclamation"></i></div>
+            <h3 id="modal-title" class="font-typewriter text-2xl font-bold mb-2 text-paperDark">NOTIS KES</h3>
+            <p id="modal-message" class="text-paperDark/90 mb-6 font-medium">Mesej sistem di sini.</p>
+            <div id="modal-actions" class="flex justify-center gap-4">
+                <button id="modal-btn-primary" onclick="closeModal()" class="bg-paperDark text-paperCream px-6 py-2 rounded font-typewriter hover:bg-black transition shadow-md">FAHAM</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Floating Feedback Toast -->
+    <div id="toast-container" class="fixed top-5 left-1/2 transform -translate-x-1/2 z-40 pointer-events-none transition-all duration-300 opacity-0 translate-y-[-20px]">
+        <div id="toast-box" class="px-6 py-3 rounded-lg shadow-xl font-typewriter text-white text-sm sm:text-base flex items-center gap-3">
+            <i id="toast-icon" class="fa-solid fa-circle-check text-xl"></i>
+            <span id="toast-msg">Maklum balas</span>
+        </div>
+    </div>
+
+    <!-- App Container -->
+    <div id="app" class="flex-1 flex flex-col max-w-7xl mx-auto w-full p-2 sm:p-4">
+        
+        <!-- VIEW 1: MAIN MENU -->
+        <div id="view-menu" class="flex-1 flex flex-col justify-center items-center py-6">
+            <div class="old-document p-6 sm:p-10 max-w-2xl w-full rounded-xl text-center relative overflow-hidden">
+                <!-- Top Secret stamp decoration -->
+                <div class="absolute top-4 right-4 stamp-badge text-xs sm:text-sm">SULIT / K-04</div>
+                
+                <div class="mb-6">
+                    <span class="inline-block p-3 rounded-full bg-paperDark text-paperCream mb-3 shadow-inner">
+                        <i class="fa-solid fa-magnifying-glass text-3xl sm:text-4xl text-goldDull"></i>
+                    </span>
+                    <h2 class="font-typewriter text-xs sm:text-sm tracking-widest text-stampRed font-bold">FAIL KES: NO. K-04/BAHASA</h2>
+                    <h1 class="font-typewriter text-3xl sm:text-5xl font-extrabold text-paperDark mt-1 tracking-tight">MISI KATA MAJMUK</h1>
+                    <div class="w-24 h-1 bg-goldDull mx-auto my-3 rounded"></div>
+                </div>
+
+                <div class="bg-paperCream/80 p-4 sm:p-5 rounded-lg border border-paperDark/20 text-left mb-8 shadow-inner">
+                    <p class="font-typewriter text-xs sm:text-sm text-paperDark leading-relaxed">
+                        <strong class="text-stampRed">Perhatian, Detektif Bahasa!</strong> Empat jenis kata majmuk telah bercampur dalam timbunan bukti. Tugas anda adalah untuk menyiasat setiap perkataan, mengenal pasti jenisnya dan meletakkannya ke dalam fail kes yang betul. Selesaikan semua bukti untuk menamatkan penyiasatan!
+                    </p>
+                </div>
+
+                <!-- Player Name Input -->
+                <div class="mb-6 flex flex-col sm:flex-row gap-3 items-center justify-center">
+                    <label for="player-name" class="font-typewriter text-sm font-bold text-paperDark">NAMA DETEKTIF:</label>
+                    <input type="text" id="player-name" value="Detektif Muda" maxlength="20" class="px-4 py-2 bg-paperCream border-2 border-paperDark rounded font-typewriter text-paperDark focus:outline-none focus:border-goldDull shadow-sm w-full sm:w-auto">
+                </div>
+
+                <!-- Menu Buttons -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 max-w-md mx-auto">
+                    <button onclick="startGame()" class="bg-paperDark text-paperCream py-3 px-6 rounded-lg font-typewriter font-bold hover:bg-black transition shadow-lg flex items-center justify-center gap-2 group">
+                        <i class="fa-solid fa-play text-goldDull group-hover:scale-110 transition"></i> MULA PENYIASATAN
+                    </button>
+                    <button onclick="openReferenceModal()" class="bg-goldDull text-paperDark py-3 px-6 rounded-lg font-typewriter font-bold hover:bg-amber-600 hover:text-white transition shadow-lg flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-folder-open"></i> RUJUKAN KES
+                    </button>
+                    <button onclick="openTeacherModal()" class="bg-paperCream border-2 border-paperDark text-paperDark py-3 px-6 rounded-lg font-typewriter font-bold hover:bg-paperDark hover:text-paperCream transition shadow-md flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-chalkboard-user"></i> MOD GURU
+                    </button>
+                    <button onclick="openLeaderboardModal()" class="bg-paperCream border-2 border-paperDark text-paperDark py-3 px-6 rounded-lg font-typewriter font-bold hover:bg-paperDark hover:text-paperCream transition shadow-md flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-trophy text-amber-600"></i> REKOD DETEKTIF
+                    </button>
+                </div>
+
+                <!-- Footer credits -->
+                <div class="mt-8 text-xs font-typewriter text-paperDark/60">
+                    Subjek Bahasa Melayu Tahun 6 • Kurikulum Standard Sekolah Rendah (KSSR)
+                </div>
+            </div>
+        </div>
+
+        <!-- VIEW 2: GAME BOARD -->
+        <div id="view-game" class="flex-1 flex flex-col hidden">
+            <!-- Top Status Bar -->
+            <div class="old-document p-3 sm:p-4 rounded-lg mb-4 flex flex-wrap items-center justify-between gap-3 shadow-md">
+                <div class="flex items-center gap-3">
+                    <button onclick="returnToMenu()" class="bg-stampRed text-white px-3 py-1.5 rounded font-typewriter text-xs sm:text-sm hover:opacity-90 transition shadow">
+                        <i class="fa-solid fa-arrow-left mr-1"></i> MENU
+                    </button>
+                    <div>
+                        <h2 class="font-typewriter text-xs text-stampRed font-bold">KES: K-04/BAHASA</h2>
+                        <h1 class="font-typewriter text-base sm:text-xl font-extrabold text-paperDark">MISI KATA MAJMUK</h1>
+                    </div>
+                </div>
+
+                <!-- Stats Display -->
+                <div class="flex items-center gap-4 sm:gap-6 font-typewriter text-xs sm:text-sm">
+                    <div class="bg-paperCream px-3 py-1.5 rounded border border-paperDark/30">
+                        <i class="fa-solid fa-star text-goldDull mr-1"></i> Skor: <span id="current-score" class="font-bold text-paperDark">0</span>
+                    </div>
+                    <div class="bg-paperCream px-3 py-1.5 rounded border border-paperDark/30">
+                        <i class="fa-solid fa-circle-check text-greenSolve mr-1"></i> Bukti: <span id="current-progress" class="font-bold text-paperDark">0/20</span>
+                    </div>
+                    <div id="timer-box" class="bg-paperCream px-3 py-1.5 rounded border border-paperDark/30 transition-colors">
+                        <i class="fa-solid fa-stopwatch text-stampRed mr-1"></i> Masa: <span id="current-timer" class="font-bold text-paperDark">120</span>s
+                    </div>
+                    <button onclick="togglePause()" class="bg-paperDark text-paperCream px-3 py-1.5 rounded hover:bg-black transition">
+                        <i id="pause-icon" class="fa-solid fa-pause"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Middle Categories & Evidence Table -->
+            <div class="grid grid-cols-1 lg:grid-cols-4 gap-4 mb-4 flex-1">
+                <!-- Category 1: Rangkai Kata Bebas -->
+                <div class="category-dropzone old-document rounded-lg p-3 flex flex-col border-t-4 border-t-catFree relative" data-category="free">
+                    <div class="flex items-center justify-between mb-2 border-b border-paperDark/20 pb-2">
+                        <div>
+                            <span class="text-xs font-typewriter font-bold text-catFree">KAT. 01</span>
+                            <h3 class="font-typewriter text-sm font-bold text-paperDark">Rangkai Kata Bebas</h3>
+                        </div>
+                        <span class="bg-catFree text-white text-xs px-2 py-0.5 rounded-full font-typewriter count-badge" id="count-free">0</span>
+                    </div>
+                    <p class="text-xs text-paperDark/80 mb-3 italic">Gabungan umum, setiap perkataan ada makna tersendiri.</p>
+                    <div class="drop-target flex-1 min-h-[120px] rounded border-2 border-dashed border-paperDark/30 p-2 flex flex-col gap-2 overflow-y-auto max-h-[180px] bg-paperCream/50">
+                        <!-- Dropped items go here -->
+                    </div>
+                </div>
+
+                <!-- Category 2: Istilah Khusus -->
+                <div class="category-dropzone old-document rounded-lg p-3 flex flex-col border-t-4 border-t-catTerm relative" data-category="term">
+                    <div class="flex items-center justify-between mb-2 border-b border-paperDark/20 pb-2">
+                        <div>
+                            <span class="text-xs font-typewriter font-bold text-catTerm">KAT. 02</span>
+                            <h3 class="font-typewriter text-sm font-bold text-paperDark">Istilah Khusus</h3>
+                        </div>
+                        <span class="bg-catTerm text-white text-xs px-2 py-0.5 rounded-full font-typewriter count-badge" id="count-term">0</span>
+                    </div>
+                    <p class="text-xs text-paperDark/80 mb-3 italic">Digunakan dalam bidang ilmu tertentu (Sains, Matematik, dll).</p>
+                    <div class="drop-target flex-1 min-h-[120px] rounded border-2 border-dashed border-paperDark/30 p-2 flex flex-col gap-2 overflow-y-auto max-h-[180px] bg-paperCream/50"></div>
+                </div>
+
+                <!-- Category 3: Kiasan (Simpulan Bahasa) -->
+                <div class="category-dropzone old-document rounded-lg p-3 flex flex-col border-t-4 border-t-catIdiom relative" data-category="idiom">
+                    <div class="flex items-center justify-between mb-2 border-b border-paperDark/20 pb-2">
+                        <div>
+                            <span class="text-xs font-typewriter font-bold text-catIdiom">KAT. 03</span>
+                            <h3 class="font-typewriter text-sm font-bold text-paperDark">Kiasan (Simpulan Bahasa)</h3>
+                        </div>
+                        <span class="bg-catIdiom text-white text-xs px-2 py-0.5 rounded-full font-typewriter count-badge" id="count-idiom">0</span>
+                    </div>
+                    <p class="text-xs text-paperDark/80 mb-3 italic">Membawa makna kiasan, bukan literal.</p>
+                    <div class="drop-target flex-1 min-h-[120px] rounded border-2 border-dashed border-paperDark/30 p-2 flex flex-col gap-2 overflow-y-auto max-h-[180px] bg-paperCream/50"></div>
+                </div>
+
+                <!-- Category 4: Mantap -->
+                <div class="category-dropzone old-document rounded-lg p-3 flex flex-col border-t-4 border-t-catSolid relative" data-category="solid">
+                    <div class="flex items-center justify-between mb-2 border-b border-paperDark/20 pb-2">
+                        <div>
+                            <span class="text-xs font-typewriter font-bold text-catSolid">KAT. 04</span>
+                            <h3 class="font-typewriter text-sm font-bold text-paperDark">Kata Majmuk Mantap</h3>
+                        </div>
+                        <span class="bg-catSolid text-white text-xs px-2 py-0.5 rounded-full font-typewriter count-badge" id="count-solid">0</span>
+                    </div>
+                    <p class="text-xs text-paperDark/80 mb-3 italic">Dieja bercantum sebagai satu perkataan mantap.</p>
+                    <div class="drop-target flex-1 min-h-[120px] rounded border-2 border-dashed border-paperDark/30 p-2 flex flex-col gap-2 overflow-y-auto max-h-[180px] bg-paperCream/50"></div>
+                </div>
+            </div>
+
+            <!-- Bottom Area: Active Evidence Pile & Controls -->
+            <div class="old-document p-4 rounded-lg flex flex-col sm:flex-row items-center justify-between gap-4 shadow-md">
+                <div class="w-full sm:w-1/4">
+                    <h3 class="font-typewriter text-xs font-bold text-stampRed uppercase tracking-wider">Timbunan Bukti</h3>
+                    <p class="text-xs text-paperDark/80">Seret kad bukti ke fail kategori di atas, atau klik kad kemudian klik butang kategori.</p>
+                </div>
+
+                <!-- Evidence Cards Carousel / Grid Container -->
+                <div id="evidence-pile" class="flex-1 flex flex-wrap gap-2 justify-center items-center max-h-36 overflow-y-auto p-2">
+                    <!-- Evidence cards will be rendered dynamically -->
+                </div>
+
+                <!-- Alternative Select & Match Buttons for Accessibility / Touch -->
+                <div class="flex flex-col gap-2 w-full sm:w-auto">
+                    <span class="text-[10px] font-typewriter text-center text-paperDark font-bold">PILIHAN PANTAS KATEGORI:</span>
+                    <div class="grid grid-cols-2 gap-1.5">
+                        <button onclick="quickAssign('free')" class="bg-catFree text-white text-xs py-1 px-2 rounded font-typewriter hover:opacity-90 transition">1. Bebas</button>
+                        <button onclick="quickAssign('term')" class="bg-catTerm text-white text-xs py-1 px-2 rounded font-typewriter hover:opacity-90 transition">2. Istilah</button>
+                        <button onclick="quickAssign('idiom')" class="bg-catIdiom text-white text-xs py-1 px-2 rounded font-typewriter hover:opacity-90 transition">3. Kiasan</button>
+                        <button onclick="quickAssign('solid')" class="bg-catSolid text-white text-xs py-1 px-2 rounded font-typewriter hover:opacity-90 transition">4. Mantap</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- VIEW 3: FINAL REPORT / RESULTS -->
+        <div id="view-results" class="flex-1 flex flex-col justify-center items-center py-6 hidden">
+            <div class="old-document p-6 sm:p-10 max-w-2xl w-full rounded-xl relative text-center">
+                <div id="results-stamp" class="absolute top-4 right-4 stamp-badge text-sm sm:text-base">KES SELESAI!</div>
+                
+                <h2 class="font-typewriter text-xs sm:text-sm tracking-widest text-stampRed font-bold">LAPORAN RASMI PENYIASATAN</h2>
+                <h1 class="font-typewriter text-2xl sm:text-4xl font-extrabold text-paperDark mt-1"> KEPUTUSAN KES K-04</h1>
+                <div class="w-32 h-1 bg-goldDull mx-auto my-4 rounded"></div>
+
+                <div class="bg-paperCream/90 p-5 rounded-lg border border-paperDark/20 mb-6 text-left shadow-inner space-y-2 font-typewriter text-sm text-paperDark">
+                    <div class="flex justify-between border-b border-paperDark/20 pb-1">
+                        <span>Nama Detektif:</span>
+                        <span id="res-name" class="font-bold">Detektif Muda</span>
+                    </div>
+                    <div class="flex justify-between border-b border-paperDark/20 pb-1">
+                        <span>Skor Akhir:</span>
+                        <span id="res-score" class="font-bold text-goldDull">0</span>
+                    </div>
+                    <div class="flex justify-between border-b border-paperDark/20 pb-1">
+                        <span>Bukti Betul:</span>
+                        <span id="res-correct" class="font-bold text-greenSolve">0</span>
+                    </div>
+                    <div class="flex justify-between border-b border-paperDark/20 pb-1">
+                        <span>Bukti Salah:</span>
+                        <span id="res-wrong" class="font-bold text-stampRed">0</span>
+                    </div>
+                    <div class="flex justify-between border-b border-paperDark/20 pb-1">
+                        <span>Peratus Ketepatan:</span>
+                        <span id="res-accuracy" class="font-bold">0%</span>
+                    </div>
+                    <div class="flex justify-between border-b border-paperDark/20 pb-1">
+                        <span>Masa Digunakan:</span>
+                        <span id="res-time" class="font-bold">0s</span>
+                    </div>
+                    <div class="flex justify-between pt-1">
+                        <span>Gelaran Detektif:</span>
+                        <span id="res-title-badge" class="font-bold text-paperDark bg-goldDull/30 px-2 rounded">Detektif Pelatih</span>
+                    </div>
+                </div>
+
+                <p id="res-message" class="font-typewriter text-sm font-bold text-paperDark mb-6">Tahniah atas usaha penyiasatan anda!</p>
+
+                <!-- Result Actions -->
+                <div class="flex flex-wrap justify-center gap-3">
+                    <button onclick="startGame()" class="bg-paperDark text-paperCream py-2.5 px-5 rounded font-typewriter font-bold hover:bg-black transition shadow">
+                        <i class="fa-solid fa-rotate-right mr-1"></i> MAIN SEMULA
+                    </button>
+                    <button onclick="openReferenceModal()" class="bg-goldDull text-paperDark py-2.5 px-5 rounded font-typewriter font-bold hover:bg-amber-600 hover:text-white transition shadow">
+                        <i class="fa-solid fa-book-open mr-1"></i> RUJUK KES
+                    </button>
+                    <button onclick="returnToMenu()" class="bg-paperCream border-2 border-paperDark text-paperDark py-2.5 px-5 rounded font-typewriter font-bold hover:bg-paperDark hover:text-paperCream transition shadow">
+                        <i class="fa-solid fa-house mr-1"></i> MENU UTAMA
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- MODAL: Reference / Knowledge Base -->
+        <div id="modal-reference" class="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm hidden p-4">
+            <div class="old-document p-6 sm:p-8 max-w-3xl w-full rounded-lg max-h-[90vh] flex flex-col shadow-2xl">
+                <div class="flex justify-between items-center mb-4 border-b border-paperDark/20 pb-2">
+                    <h3 class="font-typewriter text-xl font-bold text-paperDark flex items-center gap-2">
+                        <i class="fa-solid fa-folder-open text-goldDull"></i> FAIL RUJUKAN KATA MAJMUK
+                    </h3>
+                    <button onclick="closeReferenceModal()" class="text-paperDark hover:text-stampRed text-xl font-bold px-2">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+                </div>
+
+                <div class="flex-1 overflow-y-auto space-y-4 pr-2 font-sans text-sm text-paperDark">
+                    <!-- Kategori 1 -->
+                    <div class="bg-paperCream/90 p-4 rounded-lg border-l-4 border-l-catFree shadow-sm">
+                        <h4 class="font-typewriter font-bold text-base text-catFree mb-1">1. Rangkai Kata Bebas</h4>
+                        <p class="text-xs mb-2 italic">Gabungan kata umum yang setiap perkataannya masih mempunyai makna tersendiri.</p>
+                        <div class="text-xs font-semibold">Contoh: jam tangan, jalan raya, kapal terbang, alat tulis, bilik tidur, surat khabar, kad pengenalan, kereta api.</div>
+                    </div>
+                    <!-- Kategori 2 -->
+                    <div class="bg-paperCream/90 p-4 rounded-lg border-l-4 border-l-catTerm shadow-sm">
+                        <h4 class="font-typewriter font-bold text-base text-catTerm mb-1">2. Istilah Khusus</h4>
+                        <p class="text-xs mb-2 italic">Gabungan kata yang digunakan sebagai istilah khusus dalam bidang ilmu tertentu.</p>
+                        <div class="text-xs font-semibold">Contoh: segi tiga (Matematik), karbon dioksida (Sains), kata nama (Bahasa Melayu), sistem suria (Sains), telefon pintar (Teknologi).</div>
+                    </div>
+                    <!-- Kategori 3 -->
+                    <div class="bg-paperCream/90 p-4 rounded-lg border-l-4 border-l-catIdiom shadow-sm">
+                        <h4 class="font-typewriter font-bold text-base text-catIdiom mb-1">3. Kiasan (Simpulan Bahasa)</h4>
+                        <p class="text-xs mb-2 italic">Gabungan kata yang membawa makna kiasan dan bukan semata-mata makna literal.</p>
+                        <div class="text-xs font-semibold">Contoh: anak emas, ringan tulang, buah hati, ulat buku, kaki bangku, kepala batu, panjang tangan, gulung tikar.</div>
+                    </div>
+                    <!-- Kategori 4 -->
+                    <div class="bg-paperCream/90 p-4 rounded-lg border-l-4 border-l-catSolid shadow-sm">
+                        <h4 class="font-typewriter font-bold text-base text-catSolid mb-1">4. Kata Majmuk Mantap</h4>
+                        <p class="text-xs mb-2 italic">Kata majmuk yang telah mantap penggunaannya dan dieja bercantum sebagai satu perkataan.</p>
+                        <div class="text-xs font-semibold">Contoh: antarabangsa, beritahu, bumiputera, jawatankuasa, kakitangan, kerjasama, matahari, setiausaha, sukarela, tanggungjawab, warganegara.</div>
+                    </div>
+                </div>
+
+                <div class="mt-4 pt-3 border-t border-paperDark/20 text-center">
+                    <button onclick="closeReferenceModal()" class="bg-paperDark text-paperCream px-6 py-2 rounded font-typewriter hover:bg-black transition">TUTUP FAIL</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- MODAL: Teacher Settings -->
+        <div id="modal-teacher" class="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm hidden p-4">
+            <div class="old-document p-6 sm:p-8 max-w-md w-full rounded-lg max-h-[90vh] flex flex-col shadow-2xl">
+                <div class="flex justify-between items-center mb-4 border-b border-paperDark/20 pb-2">
+                    <h3 class="font-typewriter text-xl font-bold text-paperDark flex items-center gap-2">
+                        <i class="fa-solid fa-chalkboard-user text-stampRed"></i> MOD GURU & TETAPAN
+                    </h3>
+                    <button onclick="closeTeacherModal()" class="text-paperDark hover:text-stampRed text-xl font-bold px-2">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+                </div>
+
+                <div class="flex-1 overflow-y-auto space-y-4 pr-2 font-typewriter text-xs text-paperDark">
+                    <div>
+                        <label class="block font-bold mb-1">Tempoh Permainan (Saat):</label>
+                        <select id="set-timer" class="w-full p-2 bg-paperCream border border-paperDark rounded font-sans">
+                            <option value="60">60 Saat</option>
+                            <option value="120" selected>120 Saat (Lalai)</option>
+                            <option value="180">180 Saat</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block font-bold mb-1">Bilangan Kad Bukti:</label>
+                        <select id="set-cards" class="w-full p-2 bg-paperCream border border-paperDark rounded font-sans">
+                            <option value="8">8 Kad</option>
+                            <option value="12">12 Kad</option>
+                            <option value="16">16 Kad</option>
+                            <option value="20" selected>20 Kad (Lalai)</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block font-bold mb-1">Markah Jawapan Betul:</label>
+                        <input type="number" id="set-score-correct" value="10" min="1" max="50" class="w-full p-2 bg-paperCream border border-paperDark rounded font-sans">
+                    </div>
+                    <div>
+                        <label class="block font-bold mb-1">Penalti Jawapan Salah:</label>
+                        <input type="number" id="set-score-wrong" value="3" min="0" max="20" class="w-full p-2 bg-paperCream border border-paperDark rounded font-sans">
+                    </div>
+                    <div class="flex items-center gap-2 pt-2">
+                        <input type="checkbox" id="set-sound" checked class="w-4 h-4 accent-paperDark">
+                        <label for="set-sound" class="font-bold">Aktifkan Kesan Bunyi (Web Audio API)</label>
+                    </div>
+                </div>
+
+                <div class="mt-4 pt-3 border-t border-paperDark/20 flex gap-2 justify-end">
+                    <button onclick="resetTeacherSettings()" class="bg-paperCream border border-paperDark text-paperDark px-4 py-2 rounded hover:bg-paperDark hover:text-paperCream transition">ASAL</button>
+                    <button onclick="saveTeacherSettings()" class="bg-paperDark text-paperCream px-4 py-2 rounded hover:bg-black transition">SIMPAN</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- MODAL: Leaderboard / Detective Records -->
+        <div id="modal-leaderboard" class="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm hidden p-4">
+            <div class="old-document p-6 sm:p-8 max-w-lg w-full rounded-lg max-h-[90vh] flex flex-col shadow-2xl">
+                <div class="flex justify-between items-center mb-4 border-b border-paperDark/20 pb-2">
+                    <h3 class="font-typewriter text-xl font-bold text-paperDark flex items-center gap-2">
+                        <i class="fa-solid fa-trophy text-amber-600"></i> PAPAN REKOD DETEKTIF
+                    </h3>
+                    <button onclick="closeLeaderboardModal()" class="text-paperDark hover:text-stampRed text-xl font-bold px-2">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+                </div>
+
+                <div class="flex-1 overflow-y-auto space-y-2 pr-1 font-typewriter text-xs text-paperDark">
+                    <div id="leaderboard-list" class="space-y-2">
+                        <!-- Populated by JS -->
+                    </div>
+                </div>
+
+                <div class="mt-4 pt-3 border-t border-paperDark/20 flex justify-between items-center">
+                    <button onclick="clearLeaderboard()" class="bg-stampRed text-white px-3 py-1.5 rounded hover:opacity-90 transition text-xs font-typewriter">PADAM REKOD</button>
+                    <button onclick="closeLeaderboardModal()" class="bg-paperDark text-paperCream px-5 py-2 rounded hover:bg-black transition text-xs font-typewriter">KEMBALI</button>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // --- DATABASE KATA MAJMUK ---
+        const EVIDENCE_DATABASE = [
+            // Kategori A: Rangkai Kata Bebas
+            { id: 'ev_1', word: 'jam tangan', category: 'free', label: 'BUKTI #001', hint: 'Digunakan di pergelangan tangan untuk melihat masa; setiap perkataan ada makna bebas.' },
+            { id: 'ev_2', word: 'jalan raya', category: 'free', label: 'BUKTI #002', hint: 'Laluan kenderaan bergerak; gabungan dua kata umum.' },
+            { id: 'ev_3', word: 'kapal terbang', category: 'free', label: 'BUKTI #003', hint: 'Kenderaan udara; kapal dan terbang membawa erti tersendiri.' },
+            { id: 'ev_4', word: 'alat tulis', category: 'free', label: 'BUKTI #004', hint: 'Kelengkapan menulis seperti pen dan pensel.' },
+            { id: 'ev_5', word: 'bilik tidur', category: 'free', label: 'BUKTI #005', hint: 'Ruang untuk berehat dan tidur di rumah.' },
+            { id: 'ev_6', word: 'surat khabar', category: 'free', label: 'BUKTI #006', hint: 'Media cetak harian untuk membaca berita.' },
+            { id: 'ev_7', word: 'kad pengenalan', category: 'free', label: 'BUKTI #007', hint: 'Dokumen pengenalan diri rasmi rakyat Malaysia.' },
+            { id: 'ev_8', word: 'kereta api', category: 'free', label: 'BUKTI #008', hint: 'Pengangkutan rel yang panjang.' },
+
+            // Kategori B: Istilah Khusus
+            { id: 'ev_9', word: 'segi tiga', category: 'term', label: 'BUKTI #009', hint: 'Istilah bidang Matematik untuk bentuk 3 penjuru.' },
+            { id: 'ev_10', word: 'karbon dioksida', category: 'term', label: 'BUKTI #010', hint: 'Istilah Sains merujuk gas yang dibebaskan.' },
+            { id: 'ev_11', word: 'kata nama', category: 'term', label: 'BUKTI #011', hint: 'Istilah khusus dalam nahu atau subjek Bahasa Melayu.' },
+            { id: 'ev_12', word: 'sistem suria', category: 'term', label: 'BUKTI #012', hint: 'Istilah Sains falak mengenai matahari dan planet.' },
+            { id: 'ev_13', word: 'telefon pintar', category: 'term', label: 'BUKTI #013', hint: 'Istilah teknologi moden alat komunikasi canggih.' },
+            { id: 'ev_14', word: 'garis lurus', category: 'term', label: 'BUKTI #014', hint: 'Istilah Matematik bagi garisan tiada lenturan.' },
+            { id: 'ev_15', word: 'rantai makanan', category: 'term', label: 'BUKTI #015', hint: 'Istilah Sains tentang hubungan tenaga hidupan.' },
+            { id: 'ev_16', word: 'penjodoh bilangan', category: 'term', label: 'BUKTI #016', hint: 'Istilah tatabahasa Bahasa Melayu.' },
+
+            // Kategori C: Kiasan (Simpulan Bahasa)
+            { id: 'ev_17', word: 'anak emas', category: 'idiom', label: 'BUKTI #017', hint: 'Maksud kiasan: anak kesayangan.' },
+            { id: 'ev_18', word: 'ringan tulang', category: 'idiom', label: 'BUKTI #018', hint: 'Maksud kiasan: rajin bekerja.' },
+            { id: 'ev_19', word: 'buah hati', category: 'idiom', label: 'BUKTI #019', hint: 'Maksud kiasan: orang yang sangat disayangi.' },
+            { id: 'ev_20', word: 'ulat buku', category: 'idiom', label: 'BUKTI #020', hint: 'Maksud kiasan: orang yang suka membaca buku.' },
+            { id: 'ev_21', word: 'kaki bangku', category: 'idiom', label: 'BUKTI #021', hint: 'Maksud kiasan: tidak pandai bermain bola.' },
+            { id: 'ev_22', word: 'kepala batu', category: 'idiom', label: 'BUKTI #022', hint: 'Maksud kiasan: degil dan tidak mahu mendengar nasihat.' },
+            { id: 'ev_23', word: 'panjang tangan', category: 'idiom', label: 'BUKTI #023', hint: 'Maksud kiasan: suka mencuri.' },
+            { id: 'ev_24', word: 'gulung tikar', category: 'idiom', label: 'BUKTI #024', hint: 'Maksud kiasan: perniagaan mengalami kerugian atau muflis.' },
+
+            // Kategori D: Kata Majmuk Mantap
+            { id: 'ev_25', word: 'antarabangsa', category: 'solid', label: 'BUKTI #025', hint: 'Kata majmuk mantap yang dieja bercantum.' },
+            { id: 'ev_26', word: 'beritahu', category: 'solid', label: 'BUKTI #026', hint: 'Kata majmuk mantap bermaksud memaklumkan.' },
+            { id: 'ev_27', word: 'bumiputera', category: 'solid', label: 'BUKTI #027', hint: 'Kata majmuk mantap asal usul penduduk.' },
+            { id: 'ev_28', word: 'jawatankuasa', category: 'solid', label: 'BUKTI #028', hint: 'Kata majmuk mantap kumpulan yang dilantik bertugas.' },
+            { id: 'ev_29', word: 'kakitangan', category: 'solid', label: 'BUKTI #029', hint: 'Kata majmuk mantap merujuk pekerja sesebuah organisasi.' },
+            { id: 'ev_30', word: 'kerjasama', category: 'solid', label: 'BUKTI #030', hint: 'Kata majmuk mantap melakukan sesuatu bersama-sama.' },
+            { id: 'ev_31', word: 'matahari', category: 'solid', label: 'BUKTI #031', hint: 'Kata majmuk mantap pusat sistem suria.' },
+            { id: 'ev_32', word: 'setiausaha', category: 'solid', label: 'BUKTI #032', hint: 'Kata majmuk mantap pegawai pentadbir dokumen.' },
+            { id: 'ev_33', word: 'sukarela', category: 'solid', label: 'BUKTI #033', hint: 'Kata majmuk mantap dengan kemahuan sendiri.' },
+            { id: 'ev_34', word: 'tanggungjawab', category: 'solid', label: 'BUKTI #034', hint: 'Kata majmuk mantap kewajipan yang dipikul.' },
+            { id: 'ev_35', word: 'warganegara', category: 'solid', label: 'BUKTI #035', hint: 'Kata majmuk mantap rakyat sesebuah negara.' }
+        ];
+
+        // --- GAME STATE ---
+        let gameState = {
+            playerName: 'Detektif Muda',
+            score: 0,
+            correctCount: 0,
+            wrongCount: 0,
+            timeLeft: 120,
+            timerInterval: null,
+            isPaused: false,
+            totalCards: 20,
+            pointsCorrect: 10,
+            pointsWrong: 3,
+            soundEnabled: true,
+            activeCards: [],
+            selectedCardId: null,
+            placedCategories: {
+                free: [],
+                term: [],
+                idiom: [],
+                solid: []
+            },
+            startTime: 0
+        };
+
+        // --- WEB AUDIO API SOUND GENERATOR ---
+        let audioCtx = null;
+        function initAudio() {
+            if (!audioCtx) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            }
+        }
+
+        function playSound(type) {
+            if (!gameState.soundEnabled) return;
+            try {
+                initAudio();
+                if (!audioCtx) return;
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+
+                const now = audioCtx.currentTime;
+
+                if (type === 'select') {
+                    osc.frequency.setValueAtTime(440, now);
+                    osc.frequency.exponentialRampToValueAtTime(660, now + 0.1);
+                    gain.gain.setValueAtTime(0.1, now);
+                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.1);
+                    osc.start(now);
+                    osc.stop(now + 0.1);
+                } else if (type === 'correct') {
+                    osc.type = 'triangle';
+                    osc.frequency.setValueAtTime(523.25, now); // C5
+                    osc.frequency.setValueAtTime(659.25, now + 0.1); // E5
+                    osc.frequency.setValueAtTime(783.99, now + 0.2); // G5
+                    gain.gain.setValueAtTime(0.15, now);
+                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.4);
+                    osc.start(now);
+                    osc.stop(now + 0.4);
+                } else if (type === 'wrong') {
+                    osc.type = 'sawtooth';
+                    osc.frequency.setValueAtTime(180, now);
+                    osc.frequency.setValueAtTime(120, now + 0.15);
+                    gain.gain.setValueAtTime(0.2, now);
+                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
+                    osc.start(now);
+                    osc.stop(now + 0.3);
+                } else if (type === 'win') {
+                    const notes = [523.25, 659.25, 783.99, 1046.50];
+                    notes.forEach((freq, idx) => {
+                        const o = audioCtx.createOscillator();
+                        const g = audioCtx.createGain();
+                        o.connect(g);
+                        g.connect(audioCtx.destination);
+                        o.frequency.setValueAtTime(freq, now + idx * 0.1);
+                        g.gain.setValueAtTime(0.15, now + idx * 0.1);
+                        g.gain.exponentialRampToValueAtTime(0.01, now + idx * 0.1 + 0.3);
+                        o.start(now + idx * 0.1);
+                        o.stop(now + idx * 0.1 + 0.3);
+                    });
+                }
+            } catch (e) {
+                console.log("Audio API blocked or not supported", e);
+            }
+        }
+
+        // --- UI NAVIGATION & MODALS ---
+        function switchView(viewId) {
+            document.getElementById('view-menu').classList.add('hidden');
+            document.getElementById('view-game').classList.add('hidden');
+            document.getElementById('view-results').classList.add('hidden');
+            document.getElementById(viewId).classList.remove('hidden');
+        }
+
+        function showModal(title, message, iconClass = "fa-solid fa-triangle-exclamation text-stampRed") {
+            document.getElementById('modal-title').innerText = title;
+            document.getElementById('modal-message').innerText = message;
+            document.getElementById('modal-icon').innerHTML = `<i class="${iconClass}"></i>`;
+            const modal = document.getElementById('modal-container');
+            const content = document.getElementById('modal-content');
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+                content.classList.remove('scale-95', 'opacity-0');
+                content.classList.add('scale-100', 'opacity-100');
+            }, 10);
+        }
+
+        function closeModal() {
+            const modal = document.getElementById('modal-container');
+            const content = document.getElementById('modal-content');
+            content.classList.remove('scale-100', 'opacity-100');
+            content.classList.add('scale-95', 'opacity-0');
+            setTimeout(() => {
+                modal.classList.add('hidden');
+            }, 200);
+        }
+
+        function showToast(message, isSuccess = true) {
+            const toast = document.getElementById('toast-container');
+            const box = document.getElementById('toast-box');
+            const icon = document.getElementById('toast-icon');
+            const msg = document.getElementById('toast-msg');
+
+            msg.innerText = message;
+            if (isSuccess) {
+                box.className = "px-6 py-3 rounded-lg shadow-xl font-typewriter text-white text-sm sm:text-base flex items-center gap-3 bg-greenSolve";
+                icon.className = "fa-solid fa-circle-check text-xl";
+            } else {
+                box.className = "px-6 py-3 rounded-lg shadow-xl font-typewriter text-white text-sm sm:text-base flex items-center gap-3 bg-stampRed";
+                icon.className = "fa-solid fa-triangle-exclamation text-xl";
+            }
+
+            toast.classList.remove('opacity-0', 'translate-y-[-20px]');
+            toast.classList.add('opacity-100', 'translate-y-0');
+
+            setTimeout(() => {
+                toast.classList.remove('opacity-100', 'translate-y-0');
+                toast.classList.add('opacity-0', 'translate-y-[-20px]');
+            }, 3000);
+        }
+
+        // Reference Modal
+        function openReferenceModal() {
+            document.getElementById('modal-reference').classList.remove('hidden');
+        }
+        function closeReferenceModal() {
+            document.getElementById('modal-reference').classList.add('hidden');
+        }
+
+        // Teacher Modal
+        function openTeacherModal() {
+            // Load current settings into inputs
+            document.getElementById('set-timer').value = gameState.timeLeft;
+            document.getElementById('set-cards').value = gameState.totalCards;
+            document.getElementById('set-score-correct').value = gameState.pointsCorrect;
+            document.getElementById('set-score-wrong').value = gameState.pointsWrong;
+            document.getElementById('set-sound').checked = gameState.soundEnabled;
+            document.getElementById('modal-teacher').classList.remove('hidden');
+        }
+        function closeTeacherModal() {
+            document.getElementById('modal-teacher').classList.add('hidden');
+        }
+        function saveTeacherSettings() {
+            gameState.timeLeft = parseInt(document.getElementById('set-timer').value);
+            gameState.totalCards = parseInt(document.getElementById('set-cards').value);
+            gameState.pointsCorrect = parseInt(document.getElementById('set-score-correct').value);
+            gameState.pointsWrong = parseInt(document.getElementById('set-score-wrong').value);
+            gameState.soundEnabled = document.getElementById('set-sound').checked;
+            closeTeacherSettingsLocalStorage();
+            closeTeacherModal();
+            showToast("Tetapan guru berjaya disimpan!", true);
+        }
+        function resetTeacherSettings() {
+            document.getElementById('set-timer').value = 120;
+            document.getElementById('set-cards').value = 20;
+            document.getElementById('set-score-correct').value = 10;
+            document.getElementById('set-score-wrong').value = 3;
+            document.getElementById('set-sound').checked = true;
+        }
+
+        // Leaderboard Modal
+        function openLeaderboardModal() {
+            renderLeaderboardList();
+            document.getElementById('modal-leaderboard').classList.remove('hidden');
+        }
+        function closeLeaderboardModal() {
+            document.getElementById('modal-leaderboard').classList.add('hidden');
+        }
+
+        // --- LOCAL STORAGE SETTINGS & LEADERBOARD ---
+        function saveTeacherSettingsLocalStorage() {
+            const settings = {
+                timeLeft: gameState.timeLeft,
+                totalCards: gameState.totalCards,
+                pointsCorrect: gameState.pointsCorrect,
+                pointsWrong: gameState.pointsWrong,
+                soundEnabled: gameState.soundEnabled
+            };
+            localStorage.setItem('siasat_kata_majmuk_settings', JSON.stringify(settings));
+        }
+
+        function loadTeacherSettingsLocalStorage() {
+            const saved = localStorage.getItem('siasat_kata_majmuk_settings');
+            if (saved) {
+                try {
+                    const s = JSON.parse(saved);
+                    gameState.timeLeft = s.timeLeft || 120;
+                    gameState.totalCards = s.totalCards || 20;
+                    gameState.pointsCorrect = s.pointsCorrect || 10;
+                    gameState.pointsWrong = s.pointsWrong || 3;
+                    gameState.soundEnabled = s.soundEnabled !== undefined ? s.soundEnabled : true;
+                } catch(e) {}
+            }
+        }
+
+        function saveRecordToLeaderboard() {
+            const accuracy = gameState.correctCount + gameState.wrongCount > 0 ? Math.round((gameState.correctCount / (gameState.correctCount + gameState.wrongCount)) * 100) : 0;
+            const record = {
+                name: gameState.playerName,
+                score: gameState.score,
+                accuracy: accuracy,
+                date: new Date().toLocaleDateString('ms-MY')
+            };
+
+            let board = [];
+            const saved = localStorage.getItem('siasat_kata_majmuk_leaderboard');
+            if (saved) {
+                try { board = JSON.parse(saved); } catch(e) {}
+            }
+            board.push(record);
+            board.sort((a, b) => b.score - a.score);
+            if (board.length > 10) board = board.slice(0, 10);
+            localStorage.setItem('siasat_kata_majmuk_leaderboard', JSON.stringify(board));
+        }
+
+        function renderLeaderboardList() {
+            const listEl = document.getElementById('leaderboard-list');
+            listEl.innerHTML = '';
+            let board = [];
+            const saved = localStorage.getItem('siasat_kata_majmuk_leaderboard');
+            if (saved) {
+                try { board = JSON.parse(saved); } catch(e) {}
+            }
+
+            if (board.length === 0) {
+                listEl.innerHTML = '<p class="text-center text-paperDark/60 italic py-4">Tiada rekod tersimpan lagi.</p>';
+                return;
+            }
+
+            board.forEach((rec, idx) => {
+                const item = document.createElement('div');
+                item.className = "flex justify-between items-center bg-paperCream p-2.5 rounded border border-paperDark/20";
+                item.innerHTML = `
+                    <div class="flex items-center gap-2">
+                        <span class="font-bold text-stampRed">#${idx + 1}</span>
+                        <span>${rec.name}</span>
+                    </div>
+                    <div class="flex items-center gap-4 text-xs">
+                        <span>Skor: <strong>${rec.score}</strong></span>
+                        <span>Ketepatan: <strong>${rec.accuracy}%</strong></span>
+                        <span class="text-paperDark/60">${rec.date}</span>
+                    </div>
+                `;
+                listEl.appendChild(item);
+            });
+        }
+
+        function clearLeaderboard() {
+            localStorage.removeItem('siasat_kata_majmuk_leaderboard');
+            renderLeaderboardList();
+            showToast("Semua rekod telah dipadam.", false);
+        }
+
+        // --- GAMEPLAY LOGIC ---
+        function startGame() {
+            loadTeacherSettingsLocalStorage();
+            const nameInput = document.getElementById('player-name').value.trim();
+            gameState.playerName = nameInput !== '' ? nameInput : 'Detektif Muda';
+            
+            gameState.score = 0;
+            gameState.correctCount = 0;
+            gameState.wrongCount = 0;
+            gameState.isPaused = false;
+            gameState.selectedCardId = null;
+            gameState.placedCategories = { free: [], term: [], idiom: [], solid: [] };
+            gameState.startTime = Date.now();
+
+            // Pick random subset of cards according to totalCards setting
+            let shuffled = [...EVIDENCE_DATABASE].sort(() => 0.5 - Math.random());
+            gameState.activeCards = shuffled.slice(0, gameState.totalCards);
+
+            // Reset UI
+            updateStatsUI();
+            renderEvidencePile();
+            renderDropZones();
+
+            switchView('view-game');
+            startTimer();
+            playSound('select');
+        }
+
+        function startTimer() {
+            if (gameState.timerInterval) clearInterval(gameState.timerInterval);
+            let initialTime = gameState.timeLeft;
+            // If user customized timer or default
+            let currentTime = initialTime;
+            document.getElementById('current-timer').innerText = currentTime;
+            
+            const timerBox = document.getElementById('timer-box');
+
+            gameState.timerInterval = setInterval(() => {
+                if (!gameState.isPaused) {
+                    currentTime--;
+                    document.getElementById('current-timer').innerText = currentTime;
+
+                    if (currentTime <= 15) {
+                        timerBox.classList.add('bg-stampRed/20', 'animate-pulse');
+                    }
+
+                    if (currentTime <= 0) {
+                        clearInterval(gameState.timerInterval);
+                        endGame(false);
+                    }
+                }
+            }, 1000);
+        }
+
+        function togglePause() {
+            gameState.isPaused = !gameState.isPaused;
+            const icon = document.getElementById('pause-icon');
+            if (gameState.isPaused) {
+                icon.className = "fa-solid fa-play";
+                showToast("Permainan dijeda.", false);
+            } else {
+                icon.className = "fa-solid fa-pause";
+                showToast("Permainan diteruskan.", true);
+            }
+        }
+
+        function returnToMenu() {
+            if (gameState.timerInterval) clearInterval(gameState.timerInterval);
+            switchView('view-menu');
+        }
+
+        function renderEvidencePile() {
+            const pileEl = document.getElementById('evidence-pile');
+            pileEl.innerHTML = '';
+
+            if (gameState.activeCards.length === 0) {
+                pileEl.innerHTML = '<p class="text-xs font-typewriter text-greenSolve font-bold italic">Semua bukti telah disiasat!</p>';
+                return;
+            }
+
+            gameState.activeCards.forEach(card => {
+                const cardEl = document.createElement('div');
+                cardEl.className = `evidence-card old-document px-3 py-2 rounded shadow-sm border border-paperDark/40 select-none flex flex-col items-center justify-center ${gameState.selectedCardId === card.id ? 'ring-2 ring-stampRed scale-105 bg-paperCream' : 'bg-paperCream/80'}`;
+                cardEl.setAttribute('draggable', 'true');
+                cardEl.dataset.id = card.id;
+
+                cardEl.innerHTML = `
+                    <span class="text-[9px] font-typewriter text-paperDark/60">${card.label}</span>
+                    <span class="font-typewriter text-sm font-bold text-paperDark">${card.word}</span>
+                `;
+
+                // Drag Events
+                cardEl.addEventListener('dragstart', (e) => {
+                    e.dataTransfer.setData('text/plain', card.id);
+                });
+
+                // Click to select for quick assign or tap
+                cardEl.addEventListener('click', () => {
+                    playSound('select');
+                    gameState.selectedCardId = card.id;
+                    renderEvidencePile();
+                });
+
+                pileEl.appendChild(cardEl);
+            });
+        }
+
+        function renderDropZones() {
+            const zones = document.querySelectorAll('.category-dropzone');
+            zones.forEach(zone => {
+                const catKey = zone.dataset.category;
+                const targetEl = zone.querySelector('.drop-target');
+                const countEl = zone.querySelector('.count-badge');
+                
+                countEl.innerText = gameState.placedCategories[catKey].length;
+                targetEl.innerHTML = '';
+
+                if (gameState.placedCategories[catKey].length === 0) {
+                    targetEl.innerHTML = '<span class="text-[10px] font-typewriter text-paperDark/40 text-center italic mt-4">Letakkan kad bukti di sini</span>';
+                } else {
+                    gameState.placedCategories[catKey].forEach(card => {
+                        const itemEl = document.createElement('div');
+                        itemEl.className = "bg-paperOld/80 px-2 py-1 rounded text-xs font-typewriter border border-paperDark/20 flex justify-between items-center shadow-xs";
+                        itemEl.innerHTML = `<span>${card.word}</span> <i class="fa-solid fa-check text-greenSolve text-[10px]"></i>`;
+                        targetEl.appendChild(itemEl);
+                    });
+                }
+
+                // Drag over & Drop listeners
+                zone.addEventListener('dragover', (e) => {
+                    e.preventDefault();
+                    zone.classList.add('bg-goldDull/10');
+                });
+                zone.addEventListener('dragleave', () => {
+                    zone.classList.remove('bg-goldDull/10');
+                });
+                zone.addEventListener('drop', (e) => {
+                    e.preventDefault();
+                    zone.classList.remove('bg-goldDull/10');
+                    const cardId = e.dataTransfer.getData('text/plain');
+                    if (cardId) {
+                        processAnswer(cardId, catKey);
+                    }
+                });
+            });
+        }
+
+        function quickAssign(catKey) {
+            if (!gameState.selectedCardId) {
+                showToast("Sila pilih kad bukti dari timbunan terlebih dahulu!", false);
+                return;
+            }
+            processAnswer(gameState.selectedCardId, catKey);
+            gameState.selectedCardId = null;
+        }
+
+        function processAnswer(cardId, chosenCategory) {
+            if (gameState.isPaused) return;
+
+            const cardIndex = gameState.activeCards.findIndex(c => c.id === cardId);
+            if (cardIndex === -1) return;
+
+            const card = gameState.activeCards[cardIndex];
+
+            if (card.category === chosenCategory) {
+                // Correct
+                playSound('correct');
+                gameState.score += gameState.pointsCorrect;
+                gameState.correctCount++;
+                
+                // Remove from active, add to category
+                gameState.activeCards.splice(cardIndex, 1);
+                gameState.placedCategories[chosenCategory].push(card);
+
+                showToast(`TEPAT! '${card.word}' ialah kata majmuk yang betul.`, true);
+
+                updateStatsUI();
+                renderEvidencePile();
+                renderDropZones();
+
+                // Check win condition
+                if (gameState.activeCards.length === 0) {
+                    if (gameState.timerInterval) clearInterval(gameState.timerInterval);
+                    endGame(true);
+                }
+            } else {
+                // Wrong
+                playSound('wrong');
+                gameState.score = Math.max(0, gameState.score - gameState.pointsWrong);
+                gameState.wrongCount++;
+
+                showToast(`BELUM TEPAT, DETEKTIF! Petunjuk: ${card.hint}`, false);
+                updateStatsUI();
+                renderEvidencePile();
+            }
+        }
+
+        function updateStatsUI() {
+            document.getElementById('current-score').innerText = gameState.score;
+            const completed = gameState.totalCards - gameState.activeCards.length;
+            document.getElementById('current-progress').innerText = `${completed}/${gameState.totalCards}`;
+        }
+
+        function endGame(isWin) {
+            if (gameState.timerInterval) clearInterval(gameState.timerInterval);
+            playSound('win');
+
+            const timeUsed = gameState.timeLeft - parseInt(document.getElementById('current-timer').innerText);
+            const totalTried = gameState.correctCount + gameState.wrongCount;
+            const accuracy = totalTried > 0 ? Math.round((gameState.correctCount / totalTried) * 100) : 0;
+
+            // Populate Result Screen
+            document.getElementById('res-name').innerText = gameState.playerName;
+            document.getElementById('res-score').innerText = gameState.score;
+            document.getElementById('res-correct').innerText = gameState.correctCount;
+            document.getElementById('res-wrong').innerText = gameState.wrongCount;
+            document.getElementById('res-accuracy').innerText = accuracy + '%';
+            document.getElementById('res-time').innerText = timeUsed + 's';
+
+            let titleBadge = "Detektif Pelatih";
+            let msg = "Teruskan latihan mengenal pasti jenis kata majmuk!";
+            if (accuracy >= 90) {
+                titleBadge = "Detektif Bahasa Legenda";
+                msg = "Luar biasa! Anda menguasai semua jenis kata majmuk dengan cemerlang.";
+            } else if (accuracy >= 75) {
+                titleBadge = "Detektif Cemerlang";
+                msg = "Syabas! Prestasi penyiasatan yang sangat mantap.";
+            } else if (accuracy >= 50) {
+                titleBadge = "Penyiasat Sedang Maju";
+                msg = "Usaha yang baik. Rujuk semula fail rujukan untuk lebih kemahiran.";
+            }
+
+            document.getElementById('res-title-badge').innerText = titleBadge;
+            document.getElementById('res-message').innerText = msg;
+
+            const stampEl = document.getElementById('results-stamp');
+            if (isWin) {
+                stampEl.innerText = "KES SELESAI!";
+                stampEl.className = "absolute top-4 right-4 stamp-badge stamp-success text-sm sm:text-base";
+            } else {
+                stampEl.innerText = "MASA TAMAT";
+                stampEl.className = "absolute top-4 right-4 stamp-badge text-sm sm:text-base";
+            }
+
+            saveRecordToLeaderboard();
+            switchView('view-results');
+        }
+
+        // Window load initialization
+        window.onload = function() {
+            loadTeacherSettingsLocalStorage();
+        };
+    </script>
+</body>
+</html>
